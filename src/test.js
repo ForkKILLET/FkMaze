@@ -1,0 +1,10 @@
+; (async () => {
+	const { default: Maze } = await import("./maze.js")
+	const maze = new Maze(25, 25)
+	const canvas = document.createElement("canvas")
+	document.body.appendChild(canvas)
+	const draw = () => maze.draw({ canvas, zoom: 15 })
+	await maze.randomize(1, 1, { show_progress: draw, fps: 40 })
+	draw()
+	Object.assign(window, { Maze, maze })
+})()
