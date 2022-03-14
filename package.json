@@ -9,7 +9,6 @@
   "author": "ForkΨKILLET <fork_killet@qq.com>",
   "license": "MIT",
   "dependencies": {
-    "chalk": "^5.0.0",
     "esbuild": "^0.14.20"
   },
   "devDependencies": {

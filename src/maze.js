@@ -1,4 +1,3 @@
-import chalk from "chalk"
 import extend from "fkutil-beta/extend.js"
 
 extend.Array()
@@ -63,15 +62,8 @@ export default class Maze {
 		}
 		for (const cell of this) {
 			if (cell.type === Maze.BARRIER) cell.type = Maze.WALL
+			delete cell.visited
 		}
-	}
-
-	print() {
-		console.log(this.map.map(col => col.map(({ type, visited }) => {
-			let ch = Maze.print_chars[type]
-			if (visited) ch = chalk.bgRed(ch)
-			return ch
-		}).join("")).join("\n"))
 	}
 
 	draw({ canvas, zoom }) {
