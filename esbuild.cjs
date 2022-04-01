@@ -12,7 +12,6 @@ esbuild.buildSync({
 esbuild.buildSync({
 	entryPoints: [ "src/bag.js" ],
 	bundle: true,
-	minify: true,
 	format: "iife",
 	outdir: "docs/",
 })

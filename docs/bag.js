@@ -1,2 +1,105 @@
-(()=>{var y=Object.defineProperty;var m=(h,i,t)=>i in h?y(h,i,{enumerable:!0,configurable:!0,writable:!0,value:t}):h[i]=t;var p=(h,i,t)=>(m(h,typeof i!="symbol"?i+"":i,t),t);Array.prototype.randomEntry=function(){let h=~~(Math.random()*1e6)%this.length;return[h,this[h]]};var l=class{constructor(i,t){this.r_max=i,this.c_max=t,this.map=Array(i+2).fill().map((n,s)=>Array(t+2).fill().map((r,c)=>({type:c===0||s===0||c===t+1||s===i+1?l.WALL:s%2+c%2,r:s,c})))}neighbor(i,t,n="xy"){return l[`d${n}`].map(([s,r])=>[i+s,t+r]).filter(([s,r])=>s>=1&&s<=this.r_max&&r>=1&&r<=this.c_max).map(([s,r])=>this.map[s][r])}cells(){return this.map.flat()}[Symbol.iterator](){return this.cells().values()}async randomize(i,t,{show_progress:n,fps:s}={}){let r=[],c=({r:e,c:o})=>{this.map[e][o].visited=!0,this.neighbor(e,o).filter(({type:d})=>d===l.BARRIER).forEach(d=>{d.sides=this.neighbor(d.r,d.c,d.r%2?"x":"y"),d.visited=!0,r.push(d)})};for(c({r:i,c:t});r.length;){n&&(n(this),await new Promise(f=>setTimeout(f,1e3/s)));let[e,o]=r.randomEntry(),d=o.sides.find(({visited:f})=>!f);d?(o.type=l.PATH,c(d)):o.visited=!1,r.splice(e,1)}for(let e of this)e.type===l.BARRIER&&(e.type=l.WALL),delete e.visited}draw({canvas:i,zoom:t}){i.width=(this.c_max+2)*t,i.height=(this.r_max+2)*t;let n=i.getContext("2d");for(let{r:s,c:r,type:c,visited:e}of this)n.fillStyle=l.draw_colors[c],n.fillRect(s*t,r*t,t,t),e&&(n.fillStyle="red",n.fillRect((s+.25)*t,(r+.25)*t,.5*t,.5*t))}},a=l;p(a,"WALL",0),p(a,"BARRIER",1),p(a,"PATH",2),p(a,"print_chars","#X "),p(a,"draw_colors",["black","blue","transparent"]),p(a,"dx",[[0,-1],[0,1]]),p(a,"dy",[[-1,0],[1,0]]),p(a,"dxy",[...l.dx,...l.dy]);env.exports=async()=>{let{term:h,chalk:i}=env,t=new a(25,25),n=()=>{h.clear(),h.write(t.map.map(s=>s.map(({type:r,visited:c})=>{let e=a.print_chars[r].repeat(2);return c&&(e=i.bgRed(e)),e}).join("")).join(`\r
-`))};await t.randomize(1,1,{show_progress:draw,fps:40}),n()};})();
+(() => {
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => {
+    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+    return value;
+  };
+
+  // src/maze.js
+  Array.prototype.randomEntry = function() {
+    const i = ~~(Math.random() * 1e6) % this.length;
+    return [i, this[i]];
+  };
+  var _Maze = class {
+    constructor(r_max, c_max) {
+      this.r_max = r_max;
+      this.c_max = c_max;
+      this.map = Array(r_max + 2).fill().map((_, r) => Array(c_max + 2).fill().map((_2, c) => ({
+        type: c === 0 || r === 0 || c === c_max + 1 || r === r_max + 1 ? _Maze.WALL : r % 2 + c % 2,
+        r,
+        c
+      })));
+    }
+    neighbor(r, c, dir = "xy") {
+      return _Maze[`d${dir}`].map(([dr, dc]) => [r + dr, c + dc]).filter(([r2, c2]) => r2 >= 1 && r2 <= this.r_max && c2 >= 1 && c2 <= this.c_max).map(([r2, c2]) => this.map[r2][c2]);
+    }
+    cells() {
+      return this.map.flat();
+    }
+    [Symbol.iterator]() {
+      return this.cells().values();
+    }
+    async randomize(r_in, c_in, { show_progress, fps } = {}) {
+      const Bs_marked = [];
+      const visit = ({ r, c }) => {
+        this.map[r][c].visited = true;
+        this.neighbor(r, c).filter(({ type }) => type === _Maze.BARRIER).forEach((cell) => {
+          cell.sides = this.neighbor(cell.r, cell.c, cell.r % 2 ? "x" : "y");
+          cell.visited = true;
+          Bs_marked.push(cell);
+        });
+      };
+      visit({ r: r_in, c: c_in });
+      while (Bs_marked.length) {
+        if (show_progress) {
+          show_progress(this);
+          await new Promise((res) => setTimeout(res, 1e3 / fps));
+        }
+        const [i, B_random] = Bs_marked.randomEntry();
+        const P_unvisited = B_random.sides.find(({ visited }) => !visited);
+        if (P_unvisited) {
+          B_random.type = _Maze.PATH;
+          visit(P_unvisited);
+        } else
+          B_random.visited = false;
+        Bs_marked.splice(i, 1);
+      }
+      for (const cell of this) {
+        if (cell.type === _Maze.BARRIER)
+          cell.type = _Maze.WALL;
+        delete cell.visited;
+      }
+    }
+    draw({ canvas, zoom }) {
+      canvas.width = (this.c_max + 2) * zoom;
+      canvas.height = (this.r_max + 2) * zoom;
+      const ctx = canvas.getContext("2d");
+      for (const { r, c, type, visited } of this) {
+        ctx.fillStyle = _Maze.draw_colors[type];
+        ctx.fillRect(r * zoom, c * zoom, zoom, zoom);
+        if (visited) {
+          ctx.fillStyle = "red";
+          ctx.fillRect((r + 0.25) * zoom, (c + 0.25) * zoom, 0.5 * zoom, 0.5 * zoom);
+        }
+      }
+    }
+  };
+  var Maze = _Maze;
+  __publicField(Maze, "WALL", 0);
+  __publicField(Maze, "BARRIER", 1);
+  __publicField(Maze, "PATH", 2);
+  __publicField(Maze, "print_chars", "#X ");
+  __publicField(Maze, "draw_colors", ["black", "blue", "transparent"]);
+  __publicField(Maze, "dx", [[0, -1], [0, 1]]);
+  __publicField(Maze, "dy", [[-1, 0], [1, 0]]);
+  __publicField(Maze, "dxy", [..._Maze.dx, ..._Maze.dy]);
+
+  // src/bag.js
+  env.exports = async () => {
+    const { term, chalk } = env;
+    const maze = new Maze(25, 25);
+    const print = () => {
+      term.clear();
+      term.write("\r");
+      term.write(maze.map.map((col) => col.map(({ type, visited }) => {
+        let ch = Maze.print_chars[type].repeat(2);
+        if (visited)
+          ch = chalk.bgRed(ch);
+        return ch;
+      }).join("")).join("\r\n"));
+    };
+    await maze.randomize(1, 1, { show_progress: print, fps: 40 });
+    print();
+  };
+})();
