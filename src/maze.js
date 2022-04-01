@@ -1,6 +1,7 @@
-import extend from "fkutil-beta/extend.js"
-
-extend.Array()
+Array.prototype.randomEntry = function() {
+	const i = ~~ (Math.random() * 1e6) % this.length
+	return [ i, this[i] ]
+}
 
 export default class Maze {
 	static WALL = 0
